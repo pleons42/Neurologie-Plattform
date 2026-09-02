@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0F766E">
+<link rel="manifest" href="neuroimmun-manifest.json">
+<title>Neuroimmunologie · MHH Neurologie</title>
+<style>
+:root{
+  --bg:#F6F8FB; --card:rgba(255,255,255,.72); --line:rgba(60,60,67,.12); --bd:rgba(60,60,67,.12);
+  --ink:#16233d; --txt:#16233d; --ink2:#5a6472; --tx2:#5a6472; --ink3:#8a8f98; --tx3:#8a8f98;
+  --pri:#0F766E; --grad:linear-gradient(135deg,#0F766E,#0EA5A5);
+  --ok:#1F9D55; --wrl:#B45309; --err:#C0392B;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:clip}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; color:var(--txt); background:var(--bg);
+  overflow-x:clip; min-height:100vh; font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased}
+.stickywrap{position:sticky; top:0; z-index:50}
+.hdr{display:flex; align-items:center; gap:12px; padding:10px 16px; background:rgba(255,255,255,.82);
+  -webkit-backdrop-filter:blur(16px) saturate(1.5); backdrop-filter:blur(16px) saturate(1.5); border-bottom:1px solid var(--line)}
+.hdr .back{display:inline-flex; align-items:center; gap:5px; text-decoration:none; font-size:14px; font-weight:700;
+  color:#0F766E; background:rgba(15,118,110,.09); border:1px solid rgba(15,118,110,.2); border-radius:10px; padding:9px 13px; white-space:nowrap}
+.hdr-t{display:flex; flex-direction:column; gap:1px}
+.hdr-t b{font-size:17px; font-weight:800; color:var(--ink); letter-spacing:.01em}
+.hdr-t .sub{font-size:12px; color:var(--ink2)}
+.tag{font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:#B45309;
+  background:rgba(180,83,9,.12); border:1px solid rgba(180,83,9,.25); border-radius:6px; padding:2px 6px; vertical-align:middle; margin-left:6px}
+.tabbar{display:flex; flex-wrap:wrap; gap:8px; padding:10px 16px 12px; background:rgba(246,248,251,.9); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px)}
+.tabbar button{flex:0 0 auto; font:inherit; font-size:14px; font-weight:600; color:var(--ink); background:rgba(255,255,255,.72);
+  border:1px solid var(--line); border-radius:999px; padding:9px 16px; min-height:44px; cursor:pointer; white-space:nowrap; box-shadow:0 1px 6px rgba(31,40,90,.05)}
+.tabbar button.active{background:linear-gradient(135deg,#0062CC,#4B3FB0); color:#fff; border-color:transparent; box-shadow:0 4px 14px rgba(0,98,204,.28)}
+main.main{max-width:900px; margin:0 auto; padding:16px}
+.tabpanel{display:none}
+.tabpanel.active{display:block}
+.card{background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 2px 12px rgba(31,40,90,.05); padding:16px; margin-bottom:14px}
+.disc{font-size:12px; color:var(--ink2); background:rgba(180,83,9,.06); border:1px solid rgba(180,83,9,.18); border-radius:10px; padding:10px 12px; margin-bottom:14px}
+.disc b{color:var(--wrl)}
+h2.sec{font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink3); margin:6px 0 10px}
+.refline{font-size:11px; color:var(--ink3); font-style:italic; margin-top:8px}
+/* EDSS-Stepper */
+.es-prog{margin-bottom:16px}
+.es-prog-top{display:flex; justify-content:space-between; align-items:baseline; font-size:12.5px; color:var(--tx2); margin-bottom:7px}
+.es-prog-top b{color:var(--pri); font-size:14px}
+.es-bar{height:6px; border-radius:3px; background:rgba(120,120,128,.16); overflow:hidden}
+.es-bar>div{height:100%; width:0; background:var(--grad); transition:width .22s}
+.es-item-h{display:flex; align-items:center; gap:10px; margin-bottom:14px}
+.es-num{font-weight:800; color:var(--pri); font-size:13px; background:rgba(15,118,110,.1); padding:3px 9px; border-radius:8px}
+.es-name{font-size:18px; font-weight:700; line-height:1.25}
+.es-opts{display:flex; flex-direction:column; gap:10px}
+.es-opt{display:flex; align-items:center; gap:14px; width:100%; text-align:left; padding:13px 15px; border-radius:14px;
+  border:1px solid var(--bd); background:#fff; cursor:pointer; font-family:inherit; min-height:56px; transition:all .12s}
+.es-opt:hover{border-color:var(--pri)}
+.es-opt .es-b{width:38px; height:38px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center;
+  font-size:15px; font-weight:800; background:rgba(15,118,110,.1); color:var(--pri)}
+.es-opt .es-l{font-size:14px; line-height:1.35; color:var(--txt)}
+.es-opt.sel{border-color:transparent; background:var(--grad); box-shadow:0 4px 16px rgba(15,118,110,.28)}
+.es-opt.sel .es-b{background:rgba(255,255,255,.22); color:#fff}
+.es-opt.sel .es-l{color:#fff}
+.es-nav{display:flex; justify-content:space-between; gap:12px; margin-top:18px}
+.es-nav button{font:inherit; font-size:14px; font-weight:600; padding:12px 20px; border-radius:12px; border:1px solid var(--bd);
+  background:rgba(120,120,128,.1); color:var(--txt); cursor:pointer; min-height:48px}
+.es-nav .es-next{background:var(--grad); color:#fff; border:none}
+.es-nav button:disabled{opacity:.4; cursor:default}
+.es-result{text-align:center; padding:20px 16px}
+.es-result .val{font-size:52px; font-weight:800; color:var(--pri); line-height:1}
+.es-result .lbl{font-size:13px; color:var(--ink2); margin-top:6px}
+/* Desktop-Übersicht EDSS */
+.es-row{border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px}
+.es-row-top{display:flex; align-items:center; gap:8px; margin-bottom:8px}
+.es-row-top .es-num{font-size:12px}
+.es-row-top .nm{font-size:15px; font-weight:700}
+.es-row-top .sc{margin-left:auto; font-weight:800; color:var(--pri)}
+.es-btns{display:flex; flex-wrap:wrap; gap:6px}
+.es-btns button{font:inherit; font-size:13px; min-width:38px; min-height:38px; padding:6px 10px; border-radius:9px; border:1px solid var(--bd);
+  background:#fff; cursor:pointer; color:var(--txt)}
+.es-btns button.sel{background:var(--grad); color:#fff; border-color:transparent}
+.es-desc{font-size:12.5px; color:var(--ink2); margin-top:7px}
+/* DMT */
+.dmt-item{border:1px solid var(--line); border-radius:14px; margin-bottom:10px; overflow:hidden; background:#fff}
+.dmt-head{display:flex; align-items:center; gap:10px; padding:14px 15px; cursor:pointer; background:rgba(15,118,110,.04)}
+.dmt-head .dn{font-size:15px; font-weight:800; color:var(--ink)}
+.dmt-head .dm{font-size:11.5px; color:var(--ink2)}
+.dmt-head .arr{margin-left:auto; color:var(--pri); font-weight:800; transition:transform .2s}
+.dmt-item.open .arr{transform:rotate(90deg)}
+.dmt-body{display:none; padding:6px 15px 15px}
+.dmt-item.open .dmt-body{display:block}
+.dmt-body h4{font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink3); margin:12px 0 5px}
+.dmt-body ul{margin:0 0 4px 18px}
+.dmt-body li{font-size:13.5px; margin-bottom:3px}
+.brands{font-size:12px; color:var(--ink2); font-style:italic}
+.proc{background:rgba(15,118,110,.06); border:1px solid rgba(15,118,110,.18); border-radius:10px; padding:11px 12px; font-size:13px; margin-top:8px; white-space:pre-wrap}
+.copy-btn{display:inline-flex; align-items:center; gap:6px; margin-top:8px; font:inherit; font-size:13px; font-weight:700;
+  color:#fff; background:var(--grad); border:none; border-radius:10px; padding:10px 16px; cursor:pointer; min-height:44px}
+/* MG-Check */
+textarea#mg-in{width:100%; min-height:120px; font:inherit; font-size:14px; padding:12px 14px; border-radius:12px; border:1px solid var(--bd); resize:vertical; background:#fff}
+.mg-go{margin-top:10px; width:100%; font:inherit; font-size:15px; font-weight:800; color:#fff; background:var(--grad); border:none; border-radius:12px; padding:14px; cursor:pointer; min-height:48px}
+.mg-res{margin-top:16px}
+.mg-hit{display:flex; gap:12px; align-items:flex-start; border:1px solid var(--line); border-left-width:4px; border-radius:12px; padding:12px 14px; margin-bottom:9px; background:#fff}
+.mg-hit.avoid{border-left-color:var(--err); background:rgba(192,57,43,.04)}
+.mg-hit.caution{border-left-color:var(--wrl); background:rgba(180,83,9,.04)}
+.mg-badge{font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; border-radius:7px; flex:none; margin-top:2px}
+.mg-hit.avoid .mg-badge{background:rgba(192,57,43,.14); color:var(--err)}
+.mg-hit.caution .mg-badge{background:rgba(180,83,9,.14); color:var(--wrl)}
+.mg-hit .mh-sub{font-size:14.5px; font-weight:700; color:var(--ink)}
+.mg-hit .mh-note{font-size:13px; color:var(--ink2); margin-top:2px}
+.mg-hit .mh-match{font-size:11.5px; color:var(--ink3); margin-top:3px}
+.mg-none{font-size:14px; color:var(--ink2); padding:14px; text-align:center; background:rgba(31,157,85,.06); border:1px solid rgba(31,157,85,.2); border-radius:12px}
+.mh-use{font-size:12.5px; color:var(--ink2); margin-top:4px}
+.mh-alt{font-size:12.5px; color:var(--ok); margin-top:4px}
+.mh-use b, .mh-alt b{color:var(--ink)}
+.conv-row{display:flex; flex-direction:column; gap:6px}
+.conv-row label{font-size:13px; font-weight:600; color:var(--ink2)}
+#pyr-oral{width:100%; font:inherit; font-size:16px; padding:12px 14px; border-radius:12px; border:1px solid var(--bd); background:#fff; min-height:48px}
+.pyr-out{margin-top:12px}
+.pyr-line{display:flex; justify-content:space-between; align-items:baseline; padding:11px 14px; border:1px solid var(--line); border-radius:12px; margin-bottom:8px; background:rgba(15,118,110,.05)}
+.pyr-line span{font-size:13.5px; color:var(--ink2)}
+.pyr-line b{font-size:18px; color:var(--pri); font-variant-numeric:tabular-nums}
+.neo-box{font-size:12.5px; color:var(--ink2); background:rgba(15,118,110,.05); border:1px solid rgba(15,118,110,.15); border-radius:10px; padding:10px 12px; margin-top:10px}
+.neo-box b{color:var(--ink)}
+.conv-ref{margin-top:10px}
+.conv-ref summary{font-size:13px; font-weight:700; color:var(--pri); cursor:pointer; padding:6px 0}
+.neo-tbl{width:100%; border-collapse:collapse; font-size:12.5px; margin-top:6px}
+.neo-tbl th,.neo-tbl td{border:1px solid var(--line); padding:6px 8px; text-align:left}
+.neo-tbl th{background:rgba(15,118,110,.06); font-weight:700}
+.conv-warn{font-size:12.5px; color:var(--err); background:rgba(192,57,43,.06); border:1px solid rgba(192,57,43,.2); border-radius:9px; padding:8px 10px; margin-top:8px; font-weight:600}
+.krise-c{display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:12px; padding:11px 13px; margin-bottom:8px; background:rgba(192,57,43,.04)}
+.krise-c b{font-size:14.5px; color:var(--ink)} .krise-c span{display:block; font-size:12px; color:var(--ink2)}
+.krise-num{margin-left:auto; font-size:17px; font-weight:800; color:var(--err); font-variant-numeric:tabular-nums}
+.krise-steps summary{font-size:13px; font-weight:700; color:var(--pri); cursor:pointer; padding:8px 0}
+.krise-ol{margin:6px 0 0 20px} .krise-ol li{font-size:13px; margin-bottom:7px}
+.krise-ol li b{color:var(--ink)}
+.krise-vh{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin:14px 0 12px}
+.timeline{position:relative}
+.timeline::before{content:'';position:absolute;left:16px;top:6px;bottom:6px;width:2px;background:#e2e5ea}
+.sestage{position:relative;padding-left:48px;margin-bottom:14px}
+.stnum{position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;background:#fff;border:2px solid var(--pri);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;z-index:1}
+.stcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px;box-shadow:0 2px 10px rgba(31,40,90,.04)}
+.sthdr{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.sthdr h3{font-size:14.5px;font-weight:800;color:var(--ink)}
+.sttime{font-size:11px;font-weight:700;color:var(--pri);background:rgba(15,118,110,.09);padding:3px 9px;border-radius:7px;white-space:nowrap}
+.stbody{font-size:13px;color:var(--ink2);line-height:1.5}
+.cav{background:rgba(192,57,43,.05);border:1px solid rgba(192,57,43,.25);border-left:3px solid var(--err);padding:9px 12px;font-size:13px;border-radius:0 8px 8px 0;line-height:1.5;color:var(--ink2)}
+.cav strong{color:var(--err)}
+.cav.info{background:rgba(0,98,204,.05);border-color:rgba(0,98,204,.25);border-left-color:#0062CC}
+.krise-link{display:inline-flex; align-items:center; margin-top:10px; font:inherit; font-size:13px; font-weight:700; color:#fff; background:var(--grad); border:none; border-radius:10px; padding:9px 15px; cursor:pointer; min-height:40px}
+@keyframes cardFlash{0%{box-shadow:0 0 0 0 rgba(15,118,110,0)}18%{box-shadow:0 0 0 4px rgba(15,118,110,.28)}100%{box-shadow:0 0 0 0 rgba(15,118,110,0)}}
+.nf-card-flash{animation:cardFlash 1.25s cubic-bezier(.22,.61,.36,1)}
+@media (prefers-reduced-motion:reduce){.nf-card-flash{animation:none}}
+.dmt-body ul.path-list{margin:0 0 4px 0;list-style:none;padding:0}
+.dmt-body ul.path-list li{font-size:13px;margin-bottom:6px;padding:7px 10px 7px 12px;border-left:3px solid var(--pri);background:rgba(15,118,110,.05);border-radius:0 8px 8px 0;color:var(--ink2);line-height:1.45}
+.dmt-body ul.proc-list{margin:6px 0 0 0;list-style:none;padding:11px 13px;background:rgba(15,118,110,.06);border:1px solid rgba(15,118,110,.18);border-radius:10px}
+.dmt-body ul.proc-list li{font-size:13px;margin-bottom:5px;padding-left:14px;position:relative;line-height:1.45}
+.dmt-body ul.proc-list li:before{content:"–";position:absolute;left:0;color:var(--pri);font-weight:700}
+.dmt-body ul.proc-list li:last-child{margin-bottom:0}
+.mh-ev{display:inline-block;font-size:10.5px;font-weight:700;color:var(--ink2);background:rgba(60,60,67,.08);border:1px solid var(--line);border-radius:6px;padding:2px 7px;margin-top:3px}
+.periop-sec{margin-bottom:14px}
+.periop-h{font-size:13.5px;font-weight:800;color:var(--pri);margin-bottom:6px}
+.periop-list{margin:0 0 8px 18px}
+.periop-list li{font-size:13px;margin-bottom:5px;line-height:1.45;color:var(--ink2)}
+[data-view=mobile] .stickywrap{position:static}
+</style>
+</head>
+<body>
+<div class="stickywrap">
+  <div class="hdr">
+    <a href="index.html" title="Zur Startseite" class="back">&#8249;&nbsp;Startseite</a>
+    <div class="hdr-t"><b>Neuroimmunologie <span class="tag">In Aufbau</span></b><span class="sub">MS · DMT-Monitoring · Myasthenie</span></div>
+  </div>
+  <div class="tabbar">
+    <button class="active" onclick="niTab('edss',this)">EDSS</button>
+    <button onclick="niTab('dmt',this)">DMT-Monitoring</button>
+    <button onclick="niTab('mg',this)">Myasthenie-Check</button>
+    <button onclick="niTab('qmg',this)">QMG-Score</button>
+  </div>
+</div>
+
+<main class="main">
+  <!-- ── EDSS ── -->
+  <div id="tab-edss" class="tabpanel active">
+    <div class="disc"><b>Hinweis:</b> Richtwert nach Kurtzke (1983). Die verbindliche EDSS-Bestimmung erfolgt nach Neurostatus und ärztlicher Beurteilung. Kein Ersatz für die strukturierte Untersuchung.</div>
+    <div class="card">
+      <div id="edss-host"></div>
+    </div>
+    <div class="refline">EDSS/Funktionelle Systeme · Kurtzke JF. Neurology 1983;33:1444–1452 · Bewertung nach Neurostatus.</div>
+  </div>
+
+  <!-- ── DMT-Monitoring ── -->
+  <div id="tab-dmt" class="tabpanel">
+    <div class="disc"><b>Hinweis:</b> Monitoring-Parameter gemäß Fachinformation und KKNMS-Qualitätshandbuch / DGN-Leitlinie. <b>Intervalle und Grenzwerte gegen die aktuelle Fachinformation und hausinterne SOP prüfen</b> — kuratierte Übersicht, keine Vollständigkeit.</div>
+    <h2 class="sec">Krankheitsmodifizierende Therapien (MS)</h2>
+    <div id="dmt-host"></div>
+    <div class="refline">Grundlage: jeweilige Fachinformation, KKNMS-Qualitätshandbuch MS/NMOSD, DGN-Leitlinie MS. Vor Anwendung verifizieren.</div>
+  </div>
+
+  <!-- ── Myasthenie-Check ── -->
+  <div id="tab-mg" class="tabpanel">
+    <div class="disc"><b>Hinweis:</b> Prüft den Medikamentenplan auf Wirkstoffe mit bekanntem Verschlechterungs-/Auslöse-Potenzial bei Myasthenia gravis. <b>Kuratierte Liste, keine Vollständigkeit</b> — ein fehlender Treffer bedeutet <b>nicht</b> Unbedenklichkeit. Klinische Einzelfallentscheidung.</div>
+    <div class="card" id="mg-check-card">
+      <h2 class="sec">Medikamentenplan einfügen</h2>
+      <textarea id="mg-in" placeholder="Medikamentenplan hier einfügen — z. B.:&#10;Metoprolol 47,5 mg 1-0-0&#10;Ciprofloxacin 500 mg 1-0-1&#10;Atorvastatin 20 mg 0-0-1&#10;Pantoprazol 40 mg 1-0-0"></textarea>
+      <button class="mg-go" onclick="checkMG()">Auf Myasthenie-Interaktionen prüfen</button>
+      <div id="mg-res" class="mg-res"></div>
+    </div>
+    <div class="card" id="mg-krise-card">
+      <h2 class="sec">Myasthene Krise · SOP-Kurzpfad</h2>
+      <div id="krise-contacts"></div>
+      <div class="krise-vh">Vorgehen &middot; SOP-Kurzpfad</div>
+      <div class="timeline" id="krise-timeline"></div>
+      <div class="refline">MHH-SOP „Myasthenische Krise" v1.0 (genehmigt 19.06.2024). Kontaktnummern MHH-intern.</div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec">Perioperatives Management</h2>
+      <div class="disc"><b>Hinweis:</b> Zusammenfassung nach anästhesiologischen Übersichten und Konsensus-Leitlinie — <b>kein Ersatz</b> für die anästhesiologische/interdisziplinäre Einzelfallplanung.</div>
+      <div id="periop-host"></div>
+      <div class="refline">Quellen: Perioperative management of myasthenia gravis, BJA Education 2021 · StatPearls „Anesthesia for Patients With MG" · International Consensus Guidance (Narayanaswami et al., Neurology 2021).</div>
+    </div>
+
+    <div class="card" id="mg-neo-card">
+      <h2 class="sec">Pyridostigmin oral &rarr; Neostigmin i.v. (Perfusor)</h2>
+      <div class="conv-row"><label for="pyr-oral">Orale Tagesdosis Pyridostigmin (mg / 24 h)</label>
+        <input id="pyr-oral" type="number" min="0" step="10" inputmode="decimal" placeholder="z. B. 360" oninput="convNeo()"></div>
+      <div id="pyr-out" class="pyr-out"></div>
+      <div class="neo-box" id="neo-box"></div>
+      <details class="conv-ref"><summary>SOP-Rechenbeispiele (Faktor ca. 80:1)</summary><div id="neo-table"></div></details>
+      <div class="disc" style="margin-top:12px"><b>Faktor ca. 80:1</b> (orale Pyridostigmin-Dosis : i.v. Neostigmin-Dosis) &mdash; Umstellung nach Vertriebseinstellung der Kalymin-Ampullen. <b>Neostigmin i.v. = off-label.</b> Tagesmaximaldosis Neostigmin i.v. <b>8&ndash;12 mg/d</b>, oral Mestinon&reg;/Kalymin&reg; <b>720 mg/d</b>. Nur unter intensivmedizinischer &Uuml;berwachung (Bradykardie, cholinerge Krise), <b>Atropin bereithalten</b>. In der Krise Cholinesterasehemmer je nach Situation (Sekret/Beatmung) pausieren. Quelle: MHH-SOP „Umstellung orale Pyridostigmin-Gabe auf i.v. Neostigmin-Gabe".</div>
+    </div>
+    <div class="refline">Grundlage: International Consensus Guidance for Management of MG (Narayanaswami/Sanders/Wolfe, Neurology 2021) · MGFA Cautionary Drugs · Leitlinie myasthene Syndrome (Wiendl et al. 2023) · MHH-SOP. Kuratiert; im Zweifel Fachinformation/Leitlinie.</div>
+  </div>
+  <!-- ── QMG-Score ── -->
+  <div id="tab-qmg" class="tabpanel">
+    <div class="disc"><b>Hinweis:</b> QMG-Score nach MHH-SOP „Myasthenische Krise" (Tabelle 1), verändert nach Jaretzki et al. 2000. In der ZNA sind <b>Vitalkapazität und Handkraft</b> oft nicht erhebbar &rarr; „nicht erhoben" (n.e.).</div>
+    <div class="card"><div id="qmg-host"></div></div>
+    <div class="refline">QMG · MHH-SOP „Myasthenische Krise" v1.0 · Jaretzki A 3rd et al., Neurology 2000.</div>
+  </div>
+</main>
+
+<script src="neuroimmun-data.js"></script>
+<script>
+"use strict";
+var D = window.NI_DATA;
+var NI = { fs:{}, amb:null, step:0 };
+
+/* ── Tabs ── */
+function niTab(id, btn){
+  document.querySelectorAll('.tabpanel').forEach(function(p){ p.classList.remove('active'); });
+  var el=document.getElementById('tab-'+id); if(el) el.classList.add('active');
+  document.querySelectorAll('.tabbar button').forEach(function(b){ b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  window.scrollTo({top:0});
+}
+
+/* ── EDSS ── */
+function isMobile(){ return document.documentElement.getAttribute('data-view')==='mobile'; }
+function edssItems(){ return D.edss.fs.concat([{id:'amb', name:'Gehfähigkeit (Ambulation)', opts:D.edss.ambulation, amb:true}]); }
+
+function edssFromFS(){
+  var g=[]; D.edss.fs.forEach(function(f){ var v=NI.fs[f.id]; g.push(typeof v==='number'?v:0); });
+  var c=function(n){ return g.filter(function(x){return x===n;}).length; };
+  var ge=function(n){ return g.filter(function(x){return x>=n;}).length; };
+  if(ge(4)>=1) return 4.0;
+  if(c(3)>=2) return 3.5;
+  if(c(3)===1 && c(2)>=1) return 3.5;
+  if(c(2)>=5) return 3.5;
+  if(c(3)===1) return 3.0;
+  if(c(2)>=3) return 3.0;
+  if(c(2)===2) return 2.5;
+  if(c(2)===1) return 2.0;
+  if(c(1)>1) return 1.5;
+  if(c(1)===1) return 1.0;
+  return 0.0;
+}
+function computeEDSS(){
+  var amb=(typeof NI.amb==='number')?NI.amb:0;
+  var fsE=edssFromFS();
+  var edss=(amb>=4.0)?amb:fsE;
+  return { edss:edss, fsE:fsE, amb:amb };
+}
+function edssInterp(e){
+  if(e===0) return "Normale neurologische Untersuchung";
+  if(e<3.5) return "Keine bis leichte Behinderung, voll gehfähig";
+  if(e<4.5) return "Mäßige Behinderung, ohne Hilfe gehfähig";
+  if(e<6.0) return "Gehstrecke ohne Hilfe eingeschränkt";
+  if(e<7.0) return "Gehhilfe erforderlich";
+  if(e<8.0) return "Weitgehend rollstuhlgebunden";
+  if(e<9.0) return "Bett-/Stuhlgebunden";
+  return "Weitgehend hilfloser Patient";
+}
+
+function buildEDSS(){
+  var host=document.getElementById('edss-host'); if(!host) return;
+  if(isMobile()) buildEStepper(host); else buildEOverview(host);
+}
+function buildEStepper(host){
+  var items=edssItems(), N=items.length;
+  if(NI.step>=N) NI.step=0;
+  host.innerHTML=
+    '<div class="es-prog"><div class="es-prog-top"><span>Item <b id="es-n">1</b> / '+N+'</span><span id="es-sum"></span></div>'+
+    '<div class="es-bar"><div id="es-fill"></div></div></div>'+
+    '<div id="es-item"></div>'+
+    '<div class="es-nav"><button class="es-prev" type="button" onclick="eStep(-1)">‹ Zurück</button>'+
+    '<button class="es-next" type="button" onclick="eStep(1)">Weiter ›</button></div>';
+  renderEStep();
+}
+function renderEStep(){
+  var host=document.getElementById('es-item'); if(!host) return;
+  var items=edssItems(), N=items.length, i=NI.step, it=items[i];
+  var val=it.amb?NI.amb:NI.fs[it.id];
+  if(i===N && false){} // guard
+  var cards=it.opts.map(function(o){
+    var sel=(String(val)===String(o.v));
+    var badge=it.amb?o.v.toFixed(1):o.v;
+    return '<button class="es-opt'+(sel?' sel':'')+'" type="button" onclick="selE(\''+it.id+'\','+o.v+','+(it.amb?'true':'false')+')">'+
+      '<span class="es-b">'+badge+'</span><span class="es-l">'+o.l+'</span></button>';
+  }).join('');
+  host.innerHTML='<div class="es-item-h"><span class="es-num">'+(it.amb?'Geh':(i+1))+'</span><span class="es-name">'+it.name+'</span></div>'+
+    '<div class="es-opts">'+cards+'</div>';
+  var answered=0; D.edss.fs.forEach(function(f){ if(typeof NI.fs[f.id]==='number') answered++; }); if(typeof NI.amb==='number') answered++;
+  document.getElementById('es-n').textContent=(i+1);
+  var r=computeEDSS();
+  document.getElementById('es-sum').textContent='EDSS '+r.edss.toFixed(1)+' · '+answered+'/'+N+' erfasst';
+  document.getElementById('es-fill').style.width=(((i+1)/N)*100)+'%';
+  document.querySelector('.es-prev').disabled=(i===0);
+  var next=document.querySelector('.es-next');
+  next.textContent=(i===N-1)?'Fertig ✓':'Weiter ›';
+}
+function selE(id,v,amb){
+  if(amb) NI.amb=v; else NI.fs[id]=v;
+  var items=edssItems(), N=items.length;
+  NI.step=Math.min(NI.step+1, N-1);
+  if(NI.step===N-1 && (items[N-1].amb) && typeof NI.amb==='number'){ /* letztes Item beantwortet */ }
+  renderEStep();
+  // Wenn letztes Item gerade beantwortet: Ergebnis anzeigen
+  var last=items.length-1;
+  if(id===items[last].id || amb){ maybeShowResult(); }
+}
+function maybeShowResult(){
+  var items=edssItems();
+  var complete=items.every(function(it){ return it.amb?(typeof NI.amb==='number'):(typeof NI.fs[it.id]==='number'); });
+  if(complete && isMobile()){
+    var host=document.getElementById('edss-host'); var r=computeEDSS();
+    host.innerHTML='<div class="es-result"><div class="val">'+r.edss.toFixed(1)+'</div><div class="lbl">EDSS (Richtwert) · '+edssInterp(r.edss)+'</div></div>'+
+      '<div class="es-nav"><button class="es-prev" type="button" onclick="editEDSS()">‹ Bearbeiten</button><button class="es-next" type="button" onclick="resetEDSS()">Zurücksetzen</button></div>';
+  }
+}
+function editEDSS(){ NI.step=0; buildEDSS(); }
+function resetEDSS(){ NI.fs={}; NI.amb=null; NI.step=0; buildEDSS(); }
+function eStep(d){
+  var items=edssItems(), N=items.length;
+  NI.step=Math.max(0, Math.min(N-1, NI.step+d));
+  renderEStep();
+}
+function buildEOverview(host){
+  var items=edssItems();
+  var rows=items.map(function(it){
+    var val=it.amb?NI.amb:NI.fs[it.id];
+    var btns=it.opts.map(function(o){
+      var sel=(String(val)===String(o.v));
+      return '<button class="'+(sel?'sel':'')+'" type="button" onclick="selEO(\''+it.id+'\','+o.v+','+(it.amb?'true':'false')+')">'+(it.amb?o.v.toFixed(1):o.v)+'</button>';
+    }).join('');
+    var cur=it.opts.filter(function(o){return String(o.v)===String(val);})[0];
+    return '<div class="es-row"><div class="es-row-top"><span class="es-num">'+(it.amb?'Geh':'FS')+'</span><span class="nm">'+it.name+'</span><span class="sc">'+(val===undefined||val===null?'—':(it.amb?val.toFixed(1):val))+'</span></div>'+
+      '<div class="es-btns">'+btns+'</div><div class="es-desc" id="eod-'+it.id+'">'+(cur?cur.l:'Wert wählen …')+'</div></div>';
+  }).join('');
+  var r=computeEDSS();
+  host.innerHTML=rows+'<div class="es-result" style="border-top:1px solid var(--line);margin-top:6px"><div class="val">'+r.edss.toFixed(1)+'</div><div class="lbl" id="eo-lbl">EDSS (Richtwert) · '+edssInterp(r.edss)+'</div></div>';
+}
+function selEO(id,v,amb){
+  if(amb) NI.amb=v; else NI.fs[id]=v;
+  buildEOverview(document.getElementById('edss-host'));
+}
+
+/* ── DMT ── */
+function renderDMT(){
+  var host=document.getElementById('dmt-host'); if(!host) return;
+  var li=function(a){return a.map(function(x){return '<li>'+x+'</li>';}).join('');};
+  host.innerHTML=D.dmt.map(function(d,i){
+    return '<div class="dmt-item" id="dmt-'+i+'">'+
+      '<div class="dmt-head" onclick="toggleDMT('+i+')"><div><div class="dn">'+d.name+'</div><div class="dm">'+d.moa+'</div></div><span class="arr">›</span></div>'+
+      '<div class="dmt-body">'+
+        '<div class="brands">'+d.brands+'</div>'+
+        '<h4>Vor Therapiebeginn</h4><ul>'+li(d.base)+'</ul>'+
+        '<h4>Im Verlauf (Labor / Bildgebung)</h4><ul>'+li(d.ongoing)+'</ul>'+
+        (d.prophylaxe?'<h4>Prophylaxe / Impfungen</h4><ul>'+li(d.prophylaxe)+'</ul>':'')+
+        (d.trigger?'<h4>Prüfpfad · Schwellen &amp; Aktionen</h4><ul class="path-list">'+li(d.trigger)+'</ul>':'')+
+        '<h4>Wichtige Risiken</h4><ul>'+li(d.risks)+'</ul>'+
+        '<h4>Arztbrief · Procedere (Stichpunkte)</h4><ul class="proc-list" id="proc-'+i+'">'+li(d.procedere)+'</ul>'+
+        '<button class="copy-btn" onclick="copyProc('+i+',this)">Procedere kopieren</button>'+
+      '</div></div>';
+  }).join('');
+}
+function toggleDMT(i){ var el=document.getElementById('dmt-'+i); if(el) el.classList.toggle('open'); }
+function copyProc(i,btn){
+  var d=D.dmt[i];
+  var t="Procedere unter "+d.name+":\n"+d.procedere.map(function(x){return "- "+x;}).join("\n");
+  var done=function(){ btn.textContent='Kopiert ✓'; setTimeout(function(){ btn.textContent='Procedere kopieren'; },1600); };
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(done, function(){ fallbackCopy(t); done(); }); }
+  else { fallbackCopy(t); done(); }
+}
+function fallbackCopy(t){ try{ var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);}catch(e){} }
+
+/* ── Myasthenie-Check ── */
+function normStr(s){ return (s||'').toLowerCase().replace(/[^a-zä-üß0-9]/gi,' '); }
+function checkMG(){
+  var raw=document.getElementById('mg-in').value||'';
+  var hay=' '+normStr(raw)+' ';
+  var res=document.getElementById('mg-res');
+  var hits=[];
+  D.mgDrugs.forEach(function(d){
+    var terms=[]; // Wirkstoff-Kernbegriffe + Handelsnamen
+    // Wirkstoffnamen: einzelne Wörter ≥5 Zeichen aus dem sub-Feld
+    normStr(d.sub).split(/\s+/).forEach(function(w){ if(w.length>=5) terms.push(w); });
+    (d.brands||[]).forEach(function(b){ normStr(b).split(/\s+/).forEach(function(w){ if(w.length>=4) terms.push(w); }); });
+    var matched=terms.filter(function(t){ return hay.indexOf(' '+t)!==-1 && (hay.indexOf(' '+t+' ')!==-1 || hay.indexOf(' '+t)!==-1 && new RegExp('\\b'+t).test(hay)); });
+    // einfache, robuste Prüfung: Term als Teilwort am Wortanfang
+    var found=terms.filter(function(t){ return new RegExp('\\b'+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).test(hay); });
+    if(found.length){ hits.push({d:d, match:found[0]}); }
+  });
+  if(!raw.trim()){ res.innerHTML='<div class="mg-none">Bitte zuerst den Medikamentenplan einfügen.</div>'; return; }
+  if(!hits.length){ res.innerHTML='<div class="mg-none">Kein Wirkstoff aus der kuratierten Myasthenie-Liste erkannt.<br><small>Achtung: keine Vollständigkeit — ein fehlender Treffer bedeutet nicht Unbedenklichkeit.</small></div>'; return; }
+  // sortiere: avoid vor caution
+  hits.sort(function(a,b){ return (a.d.level==='avoid'?0:1)-(b.d.level==='avoid'?0:1); });
+  res.innerHTML='<h2 class="sec" style="margin-top:4px">'+hits.length+' Treffer</h2>'+hits.map(function(h){
+    var lv=h.d.level==='avoid'?'Meiden / KI':'Vorsicht';
+    return '<div class="mg-hit '+h.d.level+'"><span class="mg-badge">'+lv+'</span><div>'+
+      '<div class="mh-sub">'+h.d.sub+'</div>'+(h.d.evidence?'<div class="mh-ev">'+h.d.evidence+'</div>':'')+
+      (h.d.use?'<div class="mh-use"><b>Intention:</b> '+h.d.use+'</div>':'')+
+      '<div class="mh-note">'+h.d.note+'</div>'+
+      (h.d.alt?'<div class="mh-alt"><b>Alternative erwägen:</b> '+h.d.alt+'</div>':'')+
+      '<div class="mh-match">erkannt über: \u201e'+h.match+'"</div></div></div>';
+  }).join('')+'<div class="refline">Bewertung nach DGN-Leitlinie Myasthenia gravis und etablierten Empfehlungen. Einzelfallentscheidung; im Zweifel Fachinformation.</div>';
+}
+
+/* ── Pyridostigmin oral → Neostigmin i.v. (MHH-SOP, Faktor ca. 80:1) ── */
+function neoFmt(x){ return (Math.round(x*1000)/1000).toString().replace('.',','); }
+function convNeo(){
+  var oral=parseFloat(document.getElementById('pyr-oral').value);
+  var out=document.getElementById('pyr-out'); if(!out) return;
+  if(!(oral>0)){ out.innerHTML=''; return; }
+  var n=D.neostigmin, iv=oral/n.faktor, mgh=iv/24, mlh=mgh/n.konz, warn='';
+  if(oral>n.maxOral) warn+='<div class="conv-warn">Über oraler Tagesmaximaldosis ('+n.maxOral+' mg/d Mestinon/Kalymin).</div>';
+  if(iv>12) warn+='<div class="conv-warn">Über Neostigmin-Tagesmaximaldosis ('+n.maxIV+').</div>';
+  out.innerHTML='<div class="pyr-line"><span>i.v. Neostigmin (÷'+n.faktor+')</span><b>≈ '+neoFmt(iv)+' mg / 24 h</b></div>'+
+    '<div class="pyr-line"><span>Perfusor (0,05 mg/ml)</span><b>≈ '+neoFmt(mgh)+' mg/h &middot; '+neoFmt(mlh)+' ml/h</b></div>'+warn;
+}
+function renderNeo(){
+  var box=document.getElementById('neo-box'); if(box){ box.innerHTML='<b>Perfusor-Ansatz:</b> '+D.neostigmin.loesung+'<br><b>Bolus:</b> '+D.neostigmin.bolus; }
+  var t=document.getElementById('neo-table'); if(t){
+    t.innerHTML='<table class="neo-tbl"><thead><tr><th>Pyridostigmin oral</th><th>Neostigmin i.v.</th><th>mg/h</th><th>ml/h (ger.)</th></tr></thead><tbody>'+
+      D.neostigmin.table.map(function(r){ return '<tr><td>'+r.oral+' mg/d</td><td>'+neoFmt(r.iv)+' mg/d</td><td>'+r.mgh+'</td><td>'+r.round+'</td></tr>'; }).join('')+'</tbody></table>';
+  }
+}
+function kriseGoto(btn){
+  var tab=btn.getAttribute('data-tab'), sc=btn.getAttribute('data-scroll');
+  if(tab){ var b=[].slice.call(document.querySelectorAll('.tabbar button')).filter(function(x){return x.getAttribute('onclick').indexOf("'"+tab+"'")!==-1;})[0]; if(b){ niTab(tab,b); window.scrollTo({top:0,behavior:'smooth'}); } return; }
+  if(sc){ var el=document.getElementById(sc); if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); flashCard(el); } }
+}
+function flashCard(el){ try{ el.classList.add('nf-card-flash'); setTimeout(function(){ el.classList.remove('nf-card-flash'); },1300); }catch(e){} }
+function renderPeriop(){
+  var host=document.getElementById('periop-host'); if(!host||!D.periop) return;
+  host.innerHTML=D.periop.sections.map(function(s){
+    var links=(s.links||[]).map(function(l){ return '<button class="krise-link" type="button" data-tab="'+(l.tab||'')+'" data-scroll="'+(l.scroll||'')+'" onclick="kriseGoto(this)">'+l.label+' &rarr;</button>'; }).join(' ');
+    return '<div class="periop-sec"><div class="periop-h">'+s.t+'</div><ul class="periop-list">'+s.items.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+links+'</div>';
+  }).join('');
+}
+function renderKrise(){
+  var c=document.getElementById('krise-contacts');
+  if(c){ c.innerHTML=D.krise.contacts.map(function(k){ return '<div class="krise-c"><div><b>'+k.label+'</b><span>'+k.note+'</span></div><span class="krise-num">'+k.number+'</span></div>'; }).join(''); }
+  var tl=document.getElementById('krise-timeline');
+  if(tl){ tl.innerHTML=D.krise.steps.map(function(s,i){
+    var body = s.crit ? '<div class="cav">'+s.d+'</div>' : (s.info ? '<div class="cav info">'+s.d+'</div>' : '<div class="stbody">'+s.d+'</div>');
+    var link = s.link ? '<button class="krise-link" type="button" data-tab="'+(s.link.tab||'')+'" data-scroll="'+(s.link.scroll||'')+'" onclick="kriseGoto(this)">'+s.link.label+' &rarr;</button>' : '';
+    return '<div class="sestage" data-s="'+(i+1)+'"><div class="stnum">'+(i+1)+'</div>'+
+      '<div class="stcard"><div class="sthdr"><h3>'+s.t+'</h3><span class="sttime">'+(s.tag||'')+'</span></div>'+body+link+'</div></div>';
+  }).join(''); }
+}
+
+/* ── QMG-Score (Stepper mobil / Übersicht desktop) ── */
+var NIQ={sc:{}, step:0};
+function qTotal(){ var t=0; D.qmg.forEach(function(it){ var v=NIQ.sc[it.id]; if(typeof v==='number'&&v>=0) t+=v; }); return t; }
+function qScored(){ var c=0; D.qmg.forEach(function(it){ var v=NIQ.sc[it.id]; if(typeof v==='number'&&v>=0) c++; }); return c; }
+function buildQMG(){ var h=document.getElementById('qmg-host'); if(!h) return; if(isMobile()) buildQStepper(h); else buildQOverview(h); }
+function buildQStepper(h){
+  var N=D.qmg.length; if(NIQ.step>=N) NIQ.step=0;
+  h.innerHTML='<div class="es-prog"><div class="es-prog-top"><span>Item <b id="q-n">1</b> / '+N+'</span><span id="q-sum"></span></div><div class="es-bar"><div id="q-fill"></div></div></div><div id="q-item"></div><div class="es-nav"><button class="es-prev" type="button" onclick="qStep(-1)">‹ Zurück</button><button class="es-next" type="button" onclick="qStep(1)">Weiter ›</button></div>';
+  renderQStep();
+}
+function renderQStep(){
+  var host=document.getElementById('q-item'); if(!host) return;
+  var N=D.qmg.length, i=NIQ.step, it=D.qmg[i], val=NIQ.sc[it.id];
+  var cards=it.opts.map(function(o){ var sel=(String(val)===String(o.v)); var badge=(o.v<0)?'n.e.':o.v; return '<button class="es-opt'+(sel?' sel':'')+'" type="button" onclick="selQ(\''+it.id+'\','+o.v+')"><span class="es-b">'+badge+'</span><span class="es-l">'+o.l+'</span></button>'; }).join('');
+  host.innerHTML='<div class="es-item-h"><span class="es-num">'+(i+1)+'</span><span class="es-name">'+it.name+'</span></div><div class="es-opts">'+cards+'</div>';
+  document.getElementById('q-n').textContent=(i+1);
+  document.getElementById('q-sum').textContent='QMG '+qTotal()+' · '+qScored()+'/'+N+' gewertet';
+  document.getElementById('q-fill').style.width=(((i+1)/N)*100)+'%';
+  var pv=document.querySelector('#qmg-host .es-prev'); if(pv) pv.disabled=(i===0);
+  var nx=document.querySelector('#qmg-host .es-next'); if(nx) nx.textContent=(i===N-1)?'Fertig ✓':'Weiter ›';
+}
+function selQ(id,v){ NIQ.sc[id]=v; NIQ.step=Math.min(NIQ.step+1, D.qmg.length-1); renderQStep(); qMaybeResult(); }
+function qMaybeResult(){ var done=D.qmg.every(function(it){ return NIQ.sc[it.id]!==undefined; }); if(done && isMobile()){ var h=document.getElementById('qmg-host'); h.innerHTML='<div class="es-result"><div class="val">'+qTotal()+'</div><div class="lbl">QMG-Score · '+qScored()+'/'+D.qmg.length+' Items gewertet (max. 39)</div></div><div class="es-nav"><button class="es-prev" type="button" onclick="qEdit()">‹ Bearbeiten</button><button class="es-next" type="button" onclick="qReset()">Zurücksetzen</button></div>'; } }
+function qEdit(){ NIQ.step=0; buildQMG(); }
+function qReset(){ NIQ.sc={}; NIQ.step=0; buildQMG(); }
+function qStep(d){ var N=D.qmg.length; NIQ.step=Math.max(0,Math.min(N-1,NIQ.step+d)); renderQStep(); }
+function buildQOverview(h){
+  var rows=D.qmg.map(function(it,idx){ var val=NIQ.sc[it.id]; var btns=it.opts.map(function(o){ var sel=(String(val)===String(o.v)); return '<button class="'+(sel?'sel':'')+'" type="button" onclick="selQO(\''+it.id+'\','+o.v+')">'+((o.v<0)?'n.e.':o.v)+'</button>'; }).join(''); var cur=it.opts.filter(function(o){return String(o.v)===String(val);})[0]; return '<div class="es-row"><div class="es-row-top"><span class="es-num">'+(idx+1)+'</span><span class="nm">'+it.name+'</span><span class="sc">'+(val===undefined?'—':(val<0?'n.e.':val))+'</span></div><div class="es-btns">'+btns+'</div><div class="es-desc">'+(cur?cur.l:'Wert wählen …')+'</div></div>'; }).join('');
+  h.innerHTML=rows+'<div class="es-result" style="border-top:1px solid var(--line);margin-top:6px"><div class="val">'+qTotal()+'</div><div class="lbl">QMG-Score · '+qScored()+'/'+D.qmg.length+' Items gewertet (max. 39)</div></div>';
+}
+function selQO(id,v){ NIQ.sc[id]=v; buildQOverview(document.getElementById('qmg-host')); }
+
+/* ── Init + Moduswechsel ── */
+function boot(){ buildEDSS(); renderDMT(); buildQMG(); renderNeo(); renderKrise(); renderPeriop();
+  var hh=(location.hash||'').replace('#','');
+  if(['dmt','mg','edss','qmg'].indexOf(hh)!==-1){ var btn=[].slice.call(document.querySelectorAll('.tabbar button')).filter(function(b){return b.getAttribute('onclick').indexOf("'"+hh+"'")!==-1;})[0]; if(btn) niTab(hh,btn); }
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+new MutationObserver(function(m){ for(var i=0;i<m.length;i++) if(m[i].attributeName==='data-view'){ if(document.getElementById('tab-edss').classList.contains('active')) buildEDSS(); if(document.getElementById('tab-qmg').classList.contains('active')) buildQMG(); break; } })
+  .observe(document.documentElement,{attributes:true,attributeFilter:['data-view']});
+</script>
+<script src="platform-chrome.js"></script>
+<script src="platform-a11y.js"></script>
+<script src="platform-theme.js"></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){});});}</script>
+<script src="platform-viewmode.js"></script>
+</body>
+</html>

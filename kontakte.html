@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1C1C1E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icons/platform-icon-192.png">
+<link rel="manifest" href="manifest.json">
+<title>Notfallkontakte · Neurologie Tools</title>
+<style>
+:root{
+  --blue:#1B3A5C; --mblue:#2E75B6; --lblue:#D6E4F0; --xlblue:#EAF1F8;
+  --green:#2D6A4F; --gray:#333; --mgray:#666; --lgray:#f5f5f5;
+  --red:#C0392B; --lred:#FDEDEC; --orange:#E67E22; --lorange:#FEF5E7;
+  --border:#e0e0e0; --bg:#fafafa; --white:#fff; --radius:10px; --hdr:#1C1C1E;
+  --safe-t:env(safe-area-inset-top); --safe-b:env(safe-area-inset-bottom);
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);background:var(--bg);color:var(--gray);
+  padding-top:var(--safe-t);padding-bottom:calc(24px + var(--safe-b));-webkit-font-smoothing:antialiased}
+
+.hdr{background:var(--hdr);color:#fff;position:sticky;top:0;z-index:10;
+  padding:calc(12px + var(--safe-t)) 16px 12px;margin-top:calc(-1 * var(--safe-t));
+  display:flex;align-items:center;gap:12px}
+.hdr .back{width:36px;height:36px;flex:0 0 36px;border:1px solid rgba(255,255,255,.22);
+  border-radius:9px;background:rgba(255,255,255,.08);color:#fff;font-size:19px;
+  display:flex;align-items:center;justify-content:center;text-decoration:none}
+.hdr h1{font-size:18px;font-weight:600}
+.hdr .sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:1px}
+
+.ct{padding:14px 14px;max-width:640px;margin:0 auto}
+.search{position:relative;margin-bottom:12px}
+.search input{width:100%;border:1px solid var(--border);background:var(--white);color:var(--gray);
+  border-radius:var(--radius);padding:12px 14px 12px 40px;font-size:15px;font-family:var(--font)}
+.search input::placeholder{color:var(--mgray)}
+.search input:focus{outline:none;border-color:var(--mblue);box-shadow:0 0 0 3px rgba(46,117,182,.15)}
+.search .mag{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mgray);pointer-events:none}
+
+.stitle{font-size:12px;font-weight:600;color:var(--mblue);text-transform:uppercase;letter-spacing:.5px;margin:6px 2px 8px}
+.list{display:flex;flex-direction:column;gap:6px}
+
+/* Kontaktzeile = ICANS-Karte mit blauem Telefon-Avatar */
+.entry{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;
+  transition:background .15s}
+.entry:hover{background:var(--xlblue)}
+.entry:active{background:var(--lblue)}
+.entry .call{width:40px;height:40px;flex:0 0 40px;border-radius:50%;
+  background:var(--mblue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px}
+.entry .lbl{flex:1;min-width:0}
+.entry .lbl strong{font-size:14px;font-weight:600;color:var(--blue);display:block}
+.entry .lbl span{font-size:11px;color:var(--mgray)}
+.entry .num{font-variant-numeric:tabular-nums;font-size:14px;color:var(--gray);font-weight:600;white-space:nowrap}
+
+.entry.unverified{border-color:var(--orange);background:var(--lorange)}
+.entry.unverified .call{background:var(--orange)}
+.entry.unverified .num{color:var(--orange)}
+.warn-inline{display:block;font-size:11px;color:#b7600a;margin-top:3px}
+
+.disc{margin-top:16px;font-size:11px;color:var(--mgray);text-align:center;line-height:1.6}
+.empty{color:var(--mgray);font-size:14px;text-align:center;padding:24px 0;display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style id="platform-theme">
+/* ── Phase 1 · Design-Refresh (aus den Claude-Design-Mockups) ──────────
+   warmes Off-White · rundere, weichere Glas-Karten · tiefes Navy für Titel */
+body{
+  background:
+    radial-gradient(1100px 620px at 6% -8%, #F6F4EF 0%, transparent 58%),
+    radial-gradient(940px 720px at 102% 4%, #EFEDE6 0%, transparent 54%),
+    #F0EEE6 !important;
+}
+.card{
+  border-radius:20px !important;
+  box-shadow:0 8px 26px rgba(27,42,90,.08) !important;
+}
+nav[aria-label="Modulnavigation"]{ background:rgba(246,244,239,.80) !important; }
+</style>
+<style id="notfall-style">
+.notfall-btn{ display:flex; align-items:center; gap:14px; width:100%; text-align:left; cursor:pointer;
+  margin:2px 0 16px; padding:16px 18px; border:none; border-radius:16px; color:#fff; font-family:inherit;
+  background:linear-gradient(135deg,#C0392B,#a52333); box-shadow:0 6px 20px rgba(192,57,43,.32); }
+.notfall-btn:active{ transform:scale(.99); }
+.notfall-btn .nb-ic{ width:44px;height:44px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.18); font-size:22px; }
+.notfall-btn .nb-tx b{ display:block; font-size:17px; font-weight:800; line-height:1.2; }
+.notfall-btn .nb-sub{ font-size:12.5px; opacity:.92; }
+</style>
+<style id="cbadge-style">
+.entry .cbadge{ width:44px; height:44px; flex:none; border-radius:13px; display:flex; align-items:center; justify-content:center;
+  color:#fff; font-weight:800; font-size:14px; letter-spacing:.01em; box-shadow:0 2px 6px rgba(20,30,60,.18); }
+.entry .cbadge-warn{ background:#E0A800 !important; font-size:18px; }
+</style>
+<style>
+.kt-pdf-btn{display:block;width:100%;margin:14px 0 4px;padding:13px;min-height:48px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,#4B3FB0,#6A5AC0);color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 14px rgba(75,63,176,.28)}
+.kt-pdf-btn:disabled{opacity:.65;cursor:default}
+.kt-pdf-btn:active{transform:scale(.99)}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <a class="back" href="index.html" aria-label="Zurück zum Start">&#8249;</a>
+  <div>
+    <h1>Notfallkontakte</h1>
+    <div class="sub" id="sub">MHH intern</div>
+  </div>
+</header>
+
+<main class="ct">
+  <div class="search">
+    <span class="mag">&#128269;</span>
+    <input id="q" type="search" inputmode="search" autocomplete="off"
+           placeholder="Station oder Fachbereich …" aria-label="Kontakte durchsuchen">
+  </div>
+
+  <button class="notfall-btn" onclick="callNotfall()" aria-label="Notfall-Team Reanimation anrufen">
+    <span class="nb-ic">&#9742;</span>
+    <span class="nb-tx"><b>Notfall-Team / Reanimation</b><span class="nb-sub">0511-532-4949 &middot; Abfrage vor Anruf</span></span>
+  </button>
+  <div class="stitle" id="heading">Umgehende Kontaktaufnahme</div>
+  <div class="list" id="list"></div>
+  <div class="empty" id="empty">Keine Treffer.</div>
+  <button class="kt-pdf-btn" id="kt-pdf-btn" onclick="exportKontakteKarte()">&#128438;&nbsp; Kitteltaschenkarte als PDF</button>
+  <div class="disc" id="foot"></div>
+</main>
+
+<script src="contacts.js"></script>
+<script>
+(function(){
+  "use strict";
+  var data=window.MHH_CONTACTS;
+  if(!data){document.getElementById('list').innerHTML='<div class="disc">Kontaktdaten konnten nicht geladen werden (contacts.js fehlt).</div>';return;}
+  document.getElementById('sub').textContent=data.sectionTitle||'MHH intern';
+  document.getElementById('heading').textContent=data.heading||'';
+  document.getElementById('foot').textContent=data.footer||'';
+  var listEl=document.getElementById('list'),emptyEl=document.getElementById('empty');
+  function esc(s){return String(s||'').replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  var CBADGE_PAL=['#2C6FBF','#3AAF85','#C0603A','#6A5AC0','#B0417A','#3A8FB0','#8A6D3B','#4C7A34'];
+  function badgeCode(name){
+    var num=(String(name).match(/\d+/)||[])[0]; if(num) return num;
+    var words=String(name).replace(/[^A-Za-zÄÖÜäöüß ]/g,'').trim().split(/\s+/);
+    if(words.length>=2 && words[0] && words[1]) return (words[0][0]+words[1][0]).toUpperCase();
+    return String(name).slice(0,2).toUpperCase();
+  }
+  function badgeColor(name){ var h=0,str=String(name); for(var i=0;i<str.length;i++) h=(h*31+str.charCodeAt(i))>>>0; return CBADGE_PAL[h%CBADGE_PAL.length]; }
+  function render(entries){
+    listEl.innerHTML='';
+    entries.forEach(function(e){
+      var noteHtml=e.note?'<span>'+esc(e.note)+'</span>':'';
+      var badge=e.verified?('<span class="cbadge" style="background:'+badgeColor(e.name)+'">'+esc(badgeCode(e.name))+'</span>'):'<span class="cbadge cbadge-warn">&#9888;</span>';
+      var inner=badge+
+        '<span class="lbl"><strong>'+esc(e.name)+'</strong>'+noteHtml+
+          (e.verified?'':'<span class="warn-inline">'+esc(e.flag||'Nummer unbestätigt')+'</span>')+
+        '</span><span class="num">'+esc(e.number)+'</span>';
+      var node;
+      if(e.verified){node=document.createElement('a');node.className='entry';node.href=data.telHref(e.number);}
+      else{node=document.createElement('div');node.className='entry unverified';node.setAttribute('role','listitem');}
+      node.innerHTML=inner;listEl.appendChild(node);
+    });
+    emptyEl.style.display=entries.length?'none':'block';
+  }
+  render(data.entries);
+  var q=document.getElementById('q');
+  q.addEventListener('input',function(){
+    var t=q.value.trim().toLowerCase();
+    if(!t){render(data.entries);return;}
+    render(data.entries.filter(function(e){return (e.name+' '+(e.note||'')+' '+e.number).toLowerCase().indexOf(t)!==-1;}));
+  });
+  if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){});});}
+})();
+</script>
+<script src="platform-a11y.js"></script>
+<script src="platform-theme.js"></script>
+<script src="platform-chrome.js"></script>
+<script>
+function callNotfall(){
+  if(window.confirm('Notfallteam anrufen?\n\nNotfall-Team / Reanimation\n0511-532-4949')){
+    window.location.href='tel:+495115324949';
+  }
+}
+</script>
+<script src="platform-viewmode.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script>
+function ktLoadJsPDF(cb){
+  if(window.jspdf && window.jspdf.jsPDF){ cb(null); return; }
+  if(window.__ktLoading){ cb(new Error('lädt')); return; }
+  window.__ktLoading=true;
+  var s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  s.onload=function(){ window.__ktLoading=false; cb(null); };
+  s.onerror=function(){ window.__ktLoading=false; cb(new Error('nicht ladbar')); };
+  document.head.appendChild(s);
+}
+function exportKontakteKarte(){
+  var btn=document.getElementById('kt-pdf-btn');
+  function busy(v){ if(btn){ btn.disabled=v; btn.innerHTML = v ? '&#9203;&nbsp; PDF wird erstellt…' : '&#128438;&nbsp; Kitteltaschenkarte als PDF'; } }
+  busy(true);
+  ktLoadJsPDF(function(err){
+    if(err){ alert('PDF-Bibliothek nicht verfügbar.\n\nBitte Internetverbindung prüfen und erneut versuchen — danach steht der PDF-Export auch offline zur Verfügung.'); busy(false); return; }
+    try{ ktBuildKarte(); }catch(e){ alert('PDF-Fehler: '+e.message); }
+    busy(false);
+  });
+}
+function ktBuildKarte(){
+  var data=window.MHH_CONTACTS;
+  if(!data || !data.entries || !data.entries.length){ alert('Keine Kontaktdaten verfügbar.'); return; }
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({unit:'mm',format:'a5',orientation:'portrait'});
+  var PW=148, PH=210, ML=10, MR=10, CW=128;
+  var BLUE=[27,58,92], VIO=[75,63,176], WHITE=[255,255,255], GRAY=[50,50,50], MGRAY=[120,120,120], LGRAY=[210,210,210], RED=[175,35,35];
+  function fi(r,g,b){ doc.setFillColor(r,g,b); }
+  function fo(bold,sz,r,g,b){ doc.setFont('helvetica', bold?'bold':'normal'); doc.setFontSize(sz); doc.setTextColor(r!=null?r:50,g!=null?g:50,b!=null?b:50); }
+  function ln(x1,y1,x2,y2,r,g,b,w){ doc.setDrawColor(r,g,b); doc.setLineWidth(w||0.2); doc.line(x1,y1,x2,y2); }
+  function tx(s,x,y,opts){
+    var safe=String(s==null?'':s)
+      .replace(/\u00e4/g,'ae').replace(/\u00f6/g,'oe').replace(/\u00fc/g,'ue')
+      .replace(/\u00c4/g,'Ae').replace(/\u00d6/g,'Oe').replace(/\u00dc/g,'Ue')
+      .replace(/\u00df/g,'ss').replace(/\u2013/g,'-').replace(/\u2014/g,'-')
+      .replace(/\u00b7/g,'-').replace(/[^\x00-\xFF]/g,'?');
+    doc.text(safe,x,y,opts||{});
+  }
+  function sth(title,y){ fo(true,7.5,VIO[0],VIO[1],VIO[2]); tx(title.toUpperCase(),ML,y); ln(ML,y+1,PW-MR,y+1,VIO[0],VIO[1],VIO[2],0.3); return y+4; }
+
+  var now=new Date();
+  var ds=now.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+  // Kopf
+  fi(BLUE[0],BLUE[1],BLUE[2]); doc.rect(0,0,PW,14,'F');
+  fo(true,13,255,255,255); tx('Notfallkontakte  -  MHH intern', ML, 8);
+  fo(false,7.5,180,210,240); tx('Klinik fuer Neurologie  MHH  Stand ' + ds, ML, 12.5);
+  var y=19;
+
+  // Notfall-Box (hervorgehoben)
+  fi(251,226,226); doc.rect(ML,y,CW,13,'F');
+  doc.setDrawColor(RED[0],RED[1],RED[2]); doc.setLineWidth(0.4); doc.rect(ML,y,CW,13,'S');
+  fo(true,8.5,RED[0],RED[1],RED[2]); tx('NOTFALL-TEAM / REANIMATION', ML+3, y+5);
+  fo(true,12,RED[0],RED[1],RED[2]); tx('0511-532-4949', PW-MR-3, y+10, {align:'right'});
+  fo(false,6.5,GRAY[0],GRAY[1],GRAY[2]); tx('Abfrage vor Anruf', ML+3, y+10);
+  y+=18;
+
+  // Kontaktliste
+  y=sth(data.heading || 'Umgehende Kontaktaufnahme', y);
+  data.entries.forEach(function(e,i){
+    if(y > PH-24){ doc.addPage(); y=14; y=sth('Notfallkontakte (Fortsetzung)', y); }
+    var bg = i%2===0 ? [248,248,253] : WHITE;
+    fi(bg[0],bg[1],bg[2]); doc.rect(ML,y,CW,8.5,'F');
+    fo(true,8,GRAY[0],GRAY[1],GRAY[2]); tx(e.name, ML+2, y+4);
+    if(e.note){ fo(false,6.5,MGRAY[0],MGRAY[1],MGRAY[2]); tx(e.note, ML+2, y+7.3); }
+    fo(true,9.5,VIO[0],VIO[1],VIO[2]); tx(e.number, PW-MR-2, y+5.5, {align:'right'});
+    if(e.verified===false){ fo(false,6,RED[0],RED[1],RED[2]); tx('unbestaetigt', PW-MR-2, y+8, {align:'right'}); }
+    ln(ML,y+8.5,ML+CW,y+8.5,LGRAY[0],LGRAY[1],LGRAY[2],0.15);
+    y+=8.5;
+  });
+
+  // Footer
+  ln(ML,PH-9,PW-MR,PH-9,LGRAY[0],LGRAY[1],LGRAY[2],0.2);
+  fo(false,6,MGRAY[0],MGRAY[1],MGRAY[2]);
+  tx('Stand ' + ds + '  -  Nummern vor Gebrauch pruefen  -  Kein Medizinprodukt', ML, PH-5);
+
+  doc.save('MHH_Neurologie_Notfallkontakte_' + ds.replace(/\./g,'-') + '.pdf');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Neurologie · Tools</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#f6f4ef">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/platform-icon-180.png">
+<style>
+  :root{
+    --grad:linear-gradient(135deg,#0062CC,#4B3FB0);
+    --ink:#12233d; --ink2:#5a6270; --ink3:#8a8f98;
+    --line:rgba(60,60,67,.12); --card:rgba(255,255,255,.72);
+    --asm:#1F9D55; --icans:#0062CC; --stroke:#C0392B; --neuro:#0F766E; --kont:#4B3FB0;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif;
+    background:linear-gradient(160deg,#e6ecfa 0%,#f6f4ef 52%,#e8eef7 100%);
+    background-attachment:fixed;
+    padding-bottom:calc(78px + env(safe-area-inset-bottom,0px));
+  }
+  .wrap{max-width:680px; margin:0 auto; padding:20px 16px 8px}
+  .top{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .eyebrow{font-size:10.5px; font-weight:700; letter-spacing:.14em; color:var(--ink3); text-transform:uppercase}
+  .offline{display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#1F9D55;
+    background:rgba(31,157,85,.10); border:1px solid rgba(31,157,85,.25); padding:4px 10px; border-radius:999px; white-space:nowrap}
+  .offline .dot{width:7px;height:7px;border-radius:50%;background:#1F9D55}
+  .offline.off{color:#8a4b0a;background:rgba(230,126,34,.10);border-color:rgba(230,126,34,.3)}
+  .offline.off .dot{background:#E67E22}
+  h1{font-size:26px; margin:6px 0 14px; letter-spacing:-.01em}
+  .search{position:relative; margin-bottom:16px}
+  .search input{width:100%; font:inherit; font-size:15px; padding:13px 14px 13px 40px; border-radius:14px;
+    border:1px solid var(--line); background:var(--card); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px); color:var(--ink)}
+  .search::before{content:"🔍"; position:absolute; left:13px; top:12px; font-size:15px; opacity:.7}
+  .card{background:var(--card); -webkit-backdrop-filter:blur(18px) saturate(1.4); backdrop-filter:blur(18px) saturate(1.4);
+    border:1px solid var(--line); border-radius:18px; box-shadow:0 4px 20px rgba(31,40,90,.06)}
+  .sec-h{font-size:11px; font-weight:700; letter-spacing:.1em; color:var(--ink3); text-transform:uppercase; margin:20px 4px 10px}
+  /* Patientenkontext */
+  .pctx{padding:14px 16px; margin-bottom:4px}
+  .pctx-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}
+  .pctx-head .lbl{font-size:11px; font-weight:700; letter-spacing:.1em; color:var(--ink3)}
+  .link{font:inherit; font-size:13px; font-weight:600; color:var(--icans); background:none; border:none; cursor:pointer; padding:10px 10px; margin:-10px -6px; border-radius:8px; min-height:44px}
+  .pctx-view{display:flex; flex-wrap:wrap; gap:8px}
+  .pc-chip{font-size:13.5px; font-weight:600; background:rgba(0,98,204,.08); color:var(--ink); border:1px solid rgba(0,98,204,.14); padding:6px 11px; border-radius:999px}
+  .pc-empty{font-size:13.5px; color:var(--ink2)}
+  .pctx-edit{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px}
+  .pctx-edit label{font-size:11px; color:var(--ink3); display:block; margin-bottom:3px}
+  .pctx-edit input,.pctx-edit select{width:100%; font:inherit; font-size:14px; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:#fff}
+  .pctx-edit .full{grid-column:1 / -1}
+  .btn{font:inherit; font-size:14px; font-weight:700; border:none; border-radius:12px; padding:11px 16px; cursor:pointer}
+  .btn.p{background:var(--grad); color:#fff; box-shadow:0 4px 12px rgba(0,98,204,.28)}
+  .btn.g{background:rgba(120,120,128,.12); color:var(--ink)}
+  #search-results{margin-bottom:8px}
+  #search-results.hide{display:none}
+  .sr-item{display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--card); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border:1px solid var(--line); border-radius:12px; margin-bottom:6px; text-decoration:none; color:inherit; min-height:44px}
+  .sr-item .sr-l{display:flex; flex-direction:column}
+  .sr-item .sr-l b{font-size:14.5px; font-weight:700; color:var(--ink)}
+  .sr-item .sr-l span{font-size:12px; color:var(--ink2)}
+  .sr-item .sr-go{margin-left:auto; color:var(--icans); font-weight:800; font-size:18px}
+  /* Zuletzt benutzt */
+  .recents{display:flex; flex-direction:column; gap:8px}
+  .rec{display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit; padding:12px 14px}
+  .rec .ric{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex:none;background:var(--grad)}
+  .rec .rt{flex:1}
+  .rec .rt b{display:block; font-size:14.5px}
+  .rec .rt small{color:var(--ink2); font-size:12px}
+  .rec .chev{color:var(--ink3)}
+  .rec-empty{padding:14px; color:var(--ink2); font-size:13.5px}
+  /* Module */
+  .modules{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .mod{display:flex; flex-direction:column; align-items:flex-start; gap:12px; text-decoration:none; color:inherit; padding:16px; position:relative; overflow:hidden; min-height:148px; background:#fff; box-shadow:0 2px 14px rgba(31,40,90,.06)}
+  .mod::before{content:none}
+  .mod .mic.txt{ font-size:15px; font-weight:800; letter-spacing:.01em; }
+  .mod .mic{width:50px;height:50px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;flex:none;
+    background:linear-gradient(160deg,color-mix(in srgb,var(--a) 88%, #fff),color-mix(in srgb,var(--a) 78%, #101018))}
+  .mod .mtext{flex:1}
+  .mod .mtext b{display:block; font-size:16px; margin-bottom:3px; line-height:1.2}
+  .mod .mtext small{color:var(--ink2); font-size:11.5px; line-height:1.35}
+  .mod .chev{display:none}
+  .tag{display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--stroke);
+    background:rgba(192,57,43,.1); padding:2px 7px; border-radius:999px; vertical-align:middle; margin-left:6px}
+  /* Häufig */
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{display:inline-flex; align-items:center; min-height:44px; text-decoration:none; font-size:13.5px; font-weight:600; color:var(--ink); background:var(--card);
+    -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border:1px solid var(--line); padding:10px 16px; border-radius:999px}
+  .hide{display:none !important}
+  /* Bottom-Nav */
+  .bnav{position:fixed; left:0; right:0; bottom:0; z-index:800; display:flex; justify-content:space-around; align-items:stretch;
+    padding:4px 6px; padding-bottom:calc(4px + env(safe-area-inset-bottom,0px));
+    background:rgba(246,244,239,.8); -webkit-backdrop-filter:blur(20px) saturate(1.5); backdrop-filter:blur(20px) saturate(1.5);
+    border-top:1px solid var(--line); box-shadow:0 -4px 24px rgba(31,40,90,.06)}
+  .bnav a,.bnav button{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-height:52px;
+    text-decoration:none; font:inherit; font-size:11px; font-weight:500; color:var(--ink3); background:none; border:none; cursor:pointer; border-radius:12px}
+  .bnav .on{color:var(--icans); font-weight:700; background:rgba(0,98,204,.06)}
+  .bnav .ic{font-size:19px; line-height:1}
+
+  /* Desktop-Zweispalter mit Dienst-Seitenleiste */
+  .dash-side{ display:none; }
+  [data-view=desktop] .dash-grid{ display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:24px; align-items:start; }
+  [data-view=desktop] .dash-side{ display:block; position:sticky; top:16px; }
+  .side-card{ background:var(--card); -webkit-backdrop-filter:blur(18px) saturate(1.4); backdrop-filter:blur(18px) saturate(1.4);
+    border:1px solid var(--line); border-radius:18px; box-shadow:0 4px 20px rgba(31,40,90,.06); padding:14px 14px 10px; }
+  .side-h{ font-size:11px; font-weight:700; letter-spacing:.1em; color:var(--ink3); text-transform:uppercase; margin:0 2px 10px; }
+  .notfall-sm{ display:flex; align-items:center; gap:10px; width:100%; text-align:left; cursor:pointer; border:none; color:#fff;
+    border-radius:14px; padding:12px 14px; margin-bottom:12px; font-family:inherit;
+    background:linear-gradient(135deg,#C0392B,#a52333); box-shadow:0 6px 18px rgba(192,57,43,.3); }
+  .notfall-sm .ni{ width:36px;height:36px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.18);font-size:18px; }
+  .notfall-sm b{ display:block; font-size:14px; font-weight:800; line-height:1.2; } .notfall-sm small{ font-size:11.5px; opacity:.92; }
+  .side-c{ display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit; padding:8px 6px; border-radius:10px; }
+  .side-c:hover{ background:rgba(0,98,204,.05); }
+  .side-c .sc-ic{ width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(0,98,204,.1);color:#0062CC;font-size:14px; }
+  .side-c .sc-t{ flex:1; min-width:0; } .side-c .sc-t b{ display:block; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .side-c .sc-t small{ font-size:11px; color:var(--ink3); } .side-c .sc-num{ font-size:12px; font-weight:700; color:var(--ink2); white-space:nowrap; }
+  .side-all{ display:block; text-align:center; text-decoration:none; color:var(--icans); font-size:12.5px; font-weight:600; padding:8px; margin-top:2px; }
+</style>
+<style>
+#search-suggest{margin-top:8px;display:flex;flex-direction:column;gap:12px}
+.ss-grp .ss-h{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3,#8a8f98);margin-bottom:7px}
+.ss-chips{display:flex;flex-wrap:wrap;gap:8px}
+.ss-chip{display:inline-flex;flex-direction:column;justify-content:center;text-decoration:none;padding:8px 13px;border-radius:12px;background:var(--card,#fff);border:1px solid var(--line,#e6e8ee);box-shadow:0 1px 6px rgba(31,40,90,.05);min-height:44px}
+.ss-chip b{font-size:13px;color:var(--ink,#16233d);font-weight:700}
+.ss-chip span{font-size:11px;color:var(--ink2,#5b6270)}
+.ss-chip:active{transform:scale(.98)}
+#ss-new .ss-chip{border-left:3px solid transparent;border-image:linear-gradient(135deg,#0062CC,#4B3FB0) 1;border-left-width:3px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="eyebrow">Medizinische Hochschule Hannover</div>
+      <div class="offline" id="offline"><span class="dot"></span>Offline bereit</div>
+    </div>
+    <h1>Neurologie · Tools</h1>
+
+    <div class="search">
+      <input id="q" type="search" placeholder="Substanz, Score, Syndrom, Kontakt …" oninput="filter()" onfocus="onSearchFocus()" onblur="onSearchBlur()" aria-label="Suche">
+    </div>
+    <div id="search-results" class="hide" role="listbox" aria-label="Suchergebnisse"></div>
+    <div id="search-suggest" class="hide">
+      <div class="ss-grp"><div class="ss-h">Beliebt</div><div class="ss-chips" id="ss-pop"></div></div>
+      <div class="ss-grp"><div class="ss-h">Neu</div><div class="ss-chips" id="ss-new"></div></div>
+    </div>
+
+    <div class="dash-grid">
+    <div class="dash-main">
+
+    <section id="recents-sec">
+      <div class="sec-h">Zuletzt benutzt</div>
+      <div id="recents" class="recents card"></div>
+    </section>
+
+    <section>
+      <div class="sec-h">Module</div>
+      <div class="modules">
+        <a class="mod card" data-keys="asm anfallssuppressiv antiepileptika interaktion status epilepticus fahreignung syndrom schwangerschaft" style="--a:var(--asm)" href="asm.html">
+          <span class="mic">⚡</span><span class="mtext"><b>ASM</b><small>Interaktionen · SE · Fahreignung</small></span><span class="chev">›</span>
+        </a>
+        <a class="mod card" data-keys="icans crs car-t neurotoxizität grading risiko ice-score toxizität" style="--a:var(--icans)" href="icans.html">
+          <span class="mic">△</span><span class="mtext"><b>ICANS / CRS</b><small>Grading · Risiko · Therapie</small></span><span class="chev">›</span>
+        </a>
+        <a class="mod card" data-keys="stroke schlaganfall zna nihss lyse thrombektomie stroke unit sekundärprophylaxe cha2ds2 pädiatrie pednihss onset" style="--a:var(--stroke)" href="stroke.html#zna">
+          <span class="mic">⏱</span><span class="mtext"><b>Stroke <span class="tag">In Aufbau</span></b><small>ZNA · Stroke Unit · Pädiatrie</small></span><span class="chev">›</span>
+        </a>
+        <a class="mod card" data-keys="neuroimmunologie ms multiple sklerose edss dmt monitoring myasthenie myasthenia gravis natalizumab ocrelizumab fingolimod immuntherapie schub" style="--a:var(--neuro)" href="neuroimmun.html">
+          <span class="mic">&#11041;</span><span class="mtext"><b>Neuroimmunologie <span class="tag">In Aufbau</span></b><small>EDSS &middot; DMT &middot; Myasthenie</small></span><span class="chev">&rsaquo;</span>
+        </a>
+        <a class="mod card" data-keys="kontakte notfall telefon reanimation station" style="--a:var(--kont)" href="kontakte.html">
+          <span class="mic">☎</span><span class="mtext"><b>Kontakte</b><small>Notfallnummern · MHH</small></span><span class="chev">›</span>
+        </a>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-h">Häufig im Dienst</div>
+      <div class="chips">
+        <a class="chip" data-keys="status epilepticus asm" href="asm.html#status">Status epilepticus</a>
+        <a class="chip" data-keys="lyse kontraindikation stroke" href="stroke.html#lyse">Lyse-Kontraindikationen</a>
+        <a class="chip" data-keys="cha2ds2 vasc stroke" href="stroke.html#cha2ds2">CHA₂DS₂-VASc</a>
+        <a class="chip" data-keys="fahreignung asm" href="asm.html#fahreignung">Fahreignung</a>
+        <a class="chip" data-keys="icans grading" href="icans.html#grading">ICANS-Grading</a>
+      </div>
+    </section>
+
+    <div id="noresult" class="rec-empty hide" style="text-align:center; margin-top:20px">Kein Treffer.</div>
+    </div><!-- /dash-main -->
+    <aside class="dash-side" id="dash-side" aria-label="Dienst · Schnellkontakte"></aside>
+    </div><!-- /dash-grid -->
+  </div>
+
+  <nav class="bnav" aria-label="Navigation">
+    <a href="index.html" class="on" aria-current="page"><span class="ic">⌂</span><span>Start</span></a>
+    <button onclick="document.getElementById('q').focus()"><span class="ic">🔍</span><span>Suche</span></button>
+    <a href="kontakte.html"><span class="ic">☎</span><span>Kontakte</span></a>
+    <button onclick="document.getElementById('q').scrollIntoView({behavior:'smooth'})"><span class="ic">⋯</span><span>Mehr</span></button>
+  </nav>
+
+<script src="contacts.js"></script>
+<script>
+  var PKEY='neuro_patient', RKEY='neuro_recents';
+  function ls(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+  function save(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+  // ── Patientenkontext ──
+  function renderPatient(){
+    var p = ls(PKEY) || {};
+    var v = document.getElementById('pctx-view'); v.innerHTML='';
+    var parts=[];
+    if(p.age) parts.push(p.age+' J'+(p.sex?' · '+p.sex:''));
+    else if(p.sex) parts.push(p.sex);
+    if(p.wt) parts.push(p.wt+' kg');
+    if(p.egfr) parts.push('eGFR '+p.egfr);
+    if(p.bed) parts.push('Bett '+p.bed);
+    if(!parts.length){ v.innerHTML='<span class="pc-empty">Kein Patientenkontext gesetzt — über „ändern" eintragen (nur lokal auf diesem Gerät).</span>'; return; }
+    parts.forEach(function(t){ var s=document.createElement('span'); s.className='pc-chip'; s.textContent=t; v.appendChild(s); });
+  }
+  function editPatient(){
+    var p = ls(PKEY) || {};
+    document.getElementById('pc-age').value=p.age||'';
+    document.getElementById('pc-sex').value=p.sex||'';
+    document.getElementById('pc-wt').value=p.wt||'';
+    document.getElementById('pc-egfr').value=p.egfr||'';
+    document.getElementById('pc-bed').value=p.bed||'';
+    document.getElementById('pctx-view').style.display='none';
+    document.getElementById('pctx-edit').style.display='grid';
+    document.getElementById('pctx-toggle').style.visibility='hidden';
+  }
+  function closeEdit(){
+    document.getElementById('pctx-edit').style.display='none';
+    document.getElementById('pctx-view').style.display='flex';
+    document.getElementById('pctx-toggle').style.visibility='visible';
+  }
+  function savePatient(){
+    var p={ age:val('pc-age'), sex:val('pc-sex'), wt:val('pc-wt'), egfr:val('pc-egfr'), bed:val('pc-bed') };
+    save(PKEY,p); renderPatient(); closeEdit();
+  }
+  function cancelPatient(){ closeEdit(); }
+  function clearPatient(){ save(PKEY,{}); renderPatient(); closeEdit(); }
+  function val(id){ return (document.getElementById(id).value||'').trim(); }
+
+  // ── Zuletzt benutzt ──
+  function logRecent(id,label,sub,href){
+    var r = ls(RKEY) || [];
+    r = r.filter(function(x){ return x.id!==id; });
+    r.unshift({id:id,label:label,sub:sub,href:href,ts:Date.now()});
+    r = r.slice(0,3);
+    save(RKEY,r);
+  }
+  function ago(ts){
+    var m=Math.round((Date.now()-ts)/60000);
+    if(m<1) return 'gerade eben'; if(m<60) return 'vor '+m+' Min';
+    var h=Math.round(m/60); if(h<24) return 'vor '+h+' Std'; return 'vor '+Math.round(h/24)+' Tg';
+  }
+  function renderRecents(){
+    var r = ls(RKEY) || [];
+    var host=document.getElementById('recents');
+    if(!r.length){ host.innerHTML='<div class="rec-empty">Noch nichts geöffnet — starte mit einem Modul.</div>'; return; }
+    host.innerHTML = r.map(function(x){
+      return '<a class="rec" href="'+x.href+'"><span class="ric">↦</span><span class="rt"><b>'+x.label+'</b><small>'+x.sub+' · '+ago(x.ts)+'</small></span><span class="chev">›</span></a>';
+    }).join('');
+  }
+
+  // ── Suche/Filter ──
+  var SEARCH_INDEX=[
+    {kw:"levetiracetam keppra lev",label:"Levetiracetam",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Levetiracetam"},
+    {kw:"valproat valproins\u00e4ure vpa ergenyl orfiril",label:"Valproat",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Valproat"},
+    {kw:"lamotrigin ltg lamictal",label:"Lamotrigin",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Lamotrigin"},
+    {kw:"carbamazepin cbz tegretal timonil",label:"Carbamazepin",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Carbamazepin"},
+    {kw:"oxcarbazepin oxc trileptal",label:"Oxcarbazepin",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Oxcarbazepin"},
+    {kw:"lacosamid lcm vimpat",label:"Lacosamid",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Lacosamid"},
+    {kw:"brivaracetam brv briviact",label:"Brivaracetam",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Brivaracetam"},
+    {kw:"phenytoin pht",label:"Phenytoin",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Phenytoin"},
+    {kw:"phenobarbital pb luminal",label:"Phenobarbital",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Phenobarbital"},
+    {kw:"topiramat tpm topamax",label:"Topiramat",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Topiramat"},
+    {kw:"perampanel per fycompa",label:"Perampanel",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Perampanel"},
+    {kw:"zonisamid zns zonegran",label:"Zonisamid",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Zonisamid"},
+    {kw:"gabapentin gbp",label:"Gabapentin",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Gabapentin"},
+    {kw:"pregabalin pgb lyrica",label:"Pregabalin",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Pregabalin"},
+    {kw:"clobazam clb frisium",label:"Clobazam",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Clobazam"},
+    {kw:"ethosuximid esm petnidan",label:"Ethosuximid",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Ethosuximid"},
+    {kw:"primidon prm mysoline",label:"Primidon",sub:"ASM \u00b7 Interaktionscheck",href:"asm.html?add=Primidon"},
+    {kw:"actilyse alteplase rtpa rt-pa",label:"Alteplase (Actilyse\u00ae) \u2014 Dosisrechner",sub:"Stroke \u00b7 Lyse",href:"stroke.html#zna"},
+    {kw:"metalyse tenecteplase tnk",label:"Tenecteplase (Metalyse\u00ae) \u2014 Dosisrechner",sub:"Stroke \u00b7 Lyse",href:"stroke.html#zna"},
+    {kw:"nihss schlaganfallskala",label:"NIHSS",sub:"Stroke \u00b7 ZNA",href:"stroke.html#zna"},
+    {kw:"cha2ds2 chads chadsvasc vorhofflimmern vhf",label:"CHA\u2082DS\u2082-VASc",sub:"Stroke Unit",href:"stroke.html#cha2ds2"},
+    {kw:"abcd2 tia",label:"ABCD\u00b2-Score",sub:"Stroke Unit",href:"stroke.html#su"},
+    {kw:"hasbled has-bled blutungsrisiko",label:"HAS-BLED",sub:"Stroke Unit",href:"stroke.html#su"},
+    {kw:"ice icans ice-score grading crs neurotoxizit\u00e4t",label:"ICANS-Grading (ICE-Score)",sub:"ICANS / CRS",href:"icans.html"},
+    {kw:"easix risiko",label:"EASIX",sub:"ICANS \u00b7 Risiko",href:"icans.html"},
+    {kw:"pednihss p\u00e4diatrie kinder kindlicher",label:"PedNIHSS \u00b7 P\u00e4diatrie",sub:"Stroke \u00b7 P\u00e4diatrie",href:"stroke.html#paed"},
+    {kw:"status epilepticus se anfallsserie",label:"Status epilepticus",sub:"ASM \u00b7 Akuttherapie",href:"asm.html#status"},
+    {kw:"fahreignung fahren f\u00fchrerschein kfz",label:"Fahreignung",sub:"ASM",href:"asm.html#fahreignung"},
+    {kw:"lyse thrombolyse",label:"Lyse",sub:"Stroke \u00b7 ZNA",href:"stroke.html#zna"},
+    {kw:"thrombektomie mechanische rekanalisation",label:"Thrombektomie",sub:"Stroke \u00b7 ZNA",href:"stroke.html#zna"},
+    {kw:"sekund\u00e4rprophylaxe sekund\u00e4r",label:"Sekund\u00e4rprophylaxe",sub:"Stroke Unit",href:"stroke.html#su"},
+    {kw:"kontakt telefon nummer reanimation notfall intensiv an\u00e4sthesie station",label:"Notfallkontakte",sub:"MHH intern",href:"kontakte.html"},
+    {kw:"edss kurtzke behinderung multiple sklerose ms disability",label:"EDSS-Rechner",sub:"Neuroimmunologie",href:"neuroimmun.html#edss"},
+    {kw:"dmt monitoring immuntherapie natalizumab ocrelizumab ofatumumab fingolimod siponimod ozanimod teriflunomid dimethylfumarat cladribin alemtuzumab interferon glatiramer tysabri ocrevus gilenya kesimpta mavenclad lemtrada aubagio tecfidera",label:"DMT-Monitoring",sub:"Neuroimmunologie \u00b7 MS",href:"neuroimmun.html#dmt"},
+    {kw:"myasthenie myasthenia gravis wirkstoffpr\u00fcfung medikamentenplan pyridostigmin",label:"Myasthenie-Wirkstoffpr\u00fcfung",sub:"Neuroimmunologie",href:"neuroimmun.html#mg"},
+    {kw:"multiple sklerose ms neuroimmunologie schub encephalomyelitis",label:"Neuroimmunologie",sub:"EDSS \u00b7 DMT \u00b7 Myasthenie",href:"neuroimmun.html"},
+    {kw:"qmg quantitativer myasthenia gravis score jaretzki",label:"QMG-Score",sub:"Neuroimmunologie \u00b7 Myasthenie",href:"neuroimmun.html#qmg"},
+    {kw:"myasthene krise neostigmin pyridostigmin mestinon kalymin perfusor umstellung intensiv",label:"Myasthene Krise · Neostigmin-Umrechner",sub:"Neuroimmunologie",href:"neuroimmun.html#mg"},
+    {kw:"perioperativ perioperatives management anästhesie operation myasthenie sugammadex muskelrelaxans narkose thymektomie",label:"Perioperatives Management (MG)",sub:"Neuroimmunologie",href:"neuroimmun.html#mg"},
+    {kw:"schwanger schwangerschaft gravidität lyse thrombektomie rekanalisation gynäkologie",label:"Schwangere · Rekanalisation",sub:"Stroke",href:"stroke.html#grav"},
+    {kw:"heparin ptt perfusor vollheparinisierung laufrate aptt ie/h",label:"Heparin-Perfusor (MHH-SOP)",sub:"Stroke Unit",href:"stroke.html#su"},
+    {kw:"anticholinerg anticholinerges serotonin serotoninerges malignes neuroleptisches syndrom mns nms toxidrom hyperthermie rigidität klonus delir differentialdiagnose",label:"Syndrom-DD (Anticholinerg/Serotonin/MNS)",sub:"Stroke \u00b7 ZNA",href:"stroke.html#syndd"},
+    {kw:"antikoagulation antagonisierung reversal doak doac idarucizumab praxbind andexanet ppsb protamin vitamin k marcumar blutung antidot",label:"Antikoagulation · Antagonisierung",sub:"Stroke \u00b7 ZNA",href:"stroke.html#antikoag"}
+  ];
+  function filter(){
+    var q=(document.getElementById('q').value||'').toLowerCase().trim();
+    var any=false;
+    document.querySelectorAll('.mod,.chip').forEach(function(el){
+      var keys=(el.getAttribute('data-keys')||'')+' '+el.textContent.toLowerCase();
+      var show = !q || keys.toLowerCase().indexOf(q)!==-1;
+      el.classList.toggle('hide', !show);
+      if(show) any=true;
+    });
+    var res=document.getElementById('search-results'); var idxAny=false;
+    if(res){
+      if(q.length>=2){
+        var matches=SEARCH_INDEX.filter(function(it){return (it.kw+' '+it.label).toLowerCase().indexOf(q)!==-1;});
+        if(matches.length){
+          res.innerHTML=matches.slice(0,8).map(function(it){
+            return '<a class="sr-item" href="'+it.href+'"><span class="sr-l"><b>'+it.label+'</b><span>'+it.sub+'</span></span><span class="sr-go">\u203a</span></a>';
+          }).join('');
+          res.classList.remove('hide'); idxAny=true;
+        } else { res.innerHTML=''; res.classList.add('hide'); }
+      } else { res.innerHTML=''; res.classList.add('hide'); }
+    }
+    var _qel=document.getElementById('q'), _ss=document.getElementById('search-suggest');
+    if(_ss) _ss.classList.toggle('hide', !(q.length<2 && document.activeElement===_qel));
+    document.getElementById('recents-sec').classList.toggle('hide', !!q);
+    document.getElementById('noresult').classList.toggle('hide', !(q && !any && !idxAny));
+  }
+
+  // ── Offline-Anzeige ──
+  function updateOffline(){
+    var o=document.getElementById('offline');
+    var cached = ('serviceWorker' in navigator) && navigator.serviceWorker.controller;
+    if(navigator.onLine){ o.classList.remove('off'); o.innerHTML='<span class="dot"></span>'+(cached?'Offline bereit':'Online'); }
+    else { o.classList.add('off'); o.innerHTML='<span class="dot"></span>Offline'; }
+  }
+  window.addEventListener('online',updateOffline); window.addEventListener('offline',updateOffline);
+
+  function callNotfall(){ if(window.confirm('Notfallteam anrufen?\n\nNotfall-Team / Reanimation\n0511-532-4949')){ window.location.href='tel:+495115324949'; } }
+  function telOf(number){ var d=String(number).replace(/[^0-9]/g,''); if(d.charAt(0)==='0') d='49'+d.slice(1); return 'tel:+'+d; }
+  function renderSidebar(){
+    var side=document.getElementById('dash-side'); if(!side) return;
+    var e=(window.MHH_CONTACTS&&window.MHH_CONTACTS.entries)||[];
+    var rows=e.slice(0,8).map(function(c){
+      return '<a class="side-c" href="'+telOf(c.number)+'"><span class="sc-ic">&#9742;</span><span class="sc-t"><b>'+c.name+'</b>'+(c.note?'<small>'+c.note+'</small>':'')+'</span><span class="sc-num">'+c.number+'</span></a>';
+    }).join('');
+    side.innerHTML='<div class="side-card"><div class="side-h">Dienst &middot; Schnellkontakte</div>'+
+      rows+'<a class="side-all" href="kontakte.html">Alle Kontakte &rsaquo;</a></div>';
+  }
+  renderRecents(); updateOffline(); renderSidebar();
+  if((location.hash||'')==='#suche'){ var qq=document.getElementById('q'); if(qq){ qq.focus(); qq.scrollIntoView(); } }
+</script>
+<script src="platform-a11y.js"></script>
+<script src="platform-theme.js"></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').then(function(){setTimeout(updateOffline,300);}).catch(function(){});});}</script>
+<script src="platform-viewmode.js"></script>
+<script>
+  var SS_POP=[
+    {label:"NIHSS", sub:"Stroke · ZNA", href:"stroke.html#zna"},
+    {label:"Lyse-Kontraindikationen", sub:"Stroke · ZNA", href:"stroke.html#zna"},
+    {label:"Heparin-Perfusor", sub:"Stroke · Stroke Unit", href:"stroke.html#su"},
+    {label:"Status epilepticus", sub:"ASM", href:"asm.html#status"},
+    {label:"CHA\u2082DS\u2082-VASc", sub:"Stroke · Sekundär", href:"stroke.html#su"},
+    {label:"EDSS", sub:"Neuroimmunologie", href:"neuroimmun.html#edss"}
+  ];
+  var SS_NEW=[
+    {label:"Syndrom-DD", sub:"Anticholinerg/Serotonin/MNS", href:"stroke.html#syndd"},
+    {label:"Antikoagulation · Antagonisierung", sub:"Stroke · ZNA", href:"stroke.html#antikoag"},
+    {label:"Perioperatives Management (MG)", sub:"Neuroimmunologie", href:"neuroimmun.html#mg"},
+    {label:"Schwangere · Rekanalisation", sub:"Stroke", href:"stroke.html#grav"}
+  ];
+  function renderSuggest(){
+    var chip=function(it){ return '<a class="ss-chip" href="'+it.href+'"><b>'+it.label+'</b><span>'+it.sub+'</span></a>'; };
+    var p=document.getElementById('ss-pop'), n=document.getElementById('ss-new');
+    if(p) p.innerHTML=SS_POP.map(chip).join('');
+    if(n) n.innerHTML=SS_NEW.map(chip).join('');
+  }
+  function onSearchFocus(){ var q=(document.getElementById('q').value||'').trim(); if(q.length<2){ var ss=document.getElementById('search-suggest'); if(ss) ss.classList.remove('hide'); } }
+  function onSearchBlur(){ setTimeout(function(){ var ss=document.getElementById('search-suggest'); if(ss) ss.classList.add('hide'); }, 180); }
+  document.addEventListener('DOMContentLoaded', renderSuggest);
+  if(document.readyState!=='loading') renderSuggest();
+</script>
+</body>
+</html>

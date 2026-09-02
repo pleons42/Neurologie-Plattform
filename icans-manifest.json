@@ -1,0 +1,27 @@
+{
+  "name": "ICANS Grading & Therapie",
+  "short_name": "ICANS Grad",
+  "description": "Klinische Entscheidungshilfe für ICANS, CRS und CAR-T Risikoampel – Klinik für Neurologie, MHH",
+  "start_url": "./icans.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#1C1C1E",
+  "theme_color": "#1C1C1E",
+  "lang": "de",
+  "scope": "./",
+  "categories": ["medical", "health"],
+  "icons": [
+    {
+      "src": "icons/icans-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icans-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

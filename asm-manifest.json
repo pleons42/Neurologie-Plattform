@@ -1,0 +1,14 @@
+{
+  "name": "ASM-Interaktions- & Monitoring-Tool",
+  "short_name": "ASM-Tool",
+  "description": "Klinisches Tool für anfallssuppressive Therapie — MHH Neurologie",
+  "start_url": "./asm.html",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "orientation": "portrait",
+  "icons": [
+    {"src": "icons/asm-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icons/asm-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}

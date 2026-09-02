@@ -1,0 +1,17 @@
+{
+  "name": "Stroke Tool – MHH Neurologie",
+  "short_name": "Stroke",
+  "description": "Neurovaskuläre Notfallmedizin – NIHSS, Lyse, Thrombektomie, Sekundärprophylaxe. Klinik für Neurologie, MHH (im Aufbau).",
+  "start_url": "./stroke.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fafafa",
+  "theme_color": "#1C1C1E",
+  "lang": "de",
+  "categories": ["medical", "health"],
+  "icons": [
+    {"src":"icons/stroke-icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"icons/stroke-icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}
